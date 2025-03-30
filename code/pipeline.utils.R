@@ -93,7 +93,7 @@ evaluateModels <- function(data, iteration = 1, prop = 0.64, weighted = TRUE) {
       finalize_workflow(tune_tmp) %>%
       fit(data = data_train)
     
-    # Predict and grab features
+    # Predict 
     pred_tmp_mod <- cbind(data_test[,c(1:3)], predict(model_tmp, data_test, type = "prob")[,2]) %>%
       mutate(model = models[j],
              iteration = iteration)# Get prediction
@@ -208,8 +208,6 @@ plotModels <- function(result) {
               panel.grid = element_blank(),
               plot.caption = element_text(size = 4.5),
               legend.position = "none") +
-        #scale_y_continuous(limits = c(0, 1.1), breaks = seq(0, 1, by = 0.1), labels = seq(0, 1, by = 0.1)) +
-        #scale_x_discrete(labels = c("No Emesis", "Yes Emesis")) +
         geom_text(data = p.value, aes(x = 1.5, y = max.pred, label = p), size = 5 / (14/5)) +
         labs(y = "prediction", x = "") 
       
@@ -295,9 +293,10 @@ plotModels <- function(result) {
 
 
 
-# https://www.r-bloggers.com/2012/03/simple-roc-plots-with-ggplot2-part-1/
-# https://www.r-bloggers.com/2012/03/simple-roc-plots-with-ggplot2-part-2/ 
+
 rocdata <- function(grp, pred){
+  # https://www.r-bloggers.com/2012/03/simple-roc-plots-with-ggplot2-part-1/
+  # https://www.r-bloggers.com/2012/03/simple-roc-plots-with-ggplot2-part-2/ 
   # Produces x and y co-ordinates for ROC curve plot
   # Arguments: grp - labels classifying subject status
   #            pred - values of each observation
