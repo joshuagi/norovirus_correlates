@@ -157,7 +157,7 @@ plotModels <- function(result) {
 
   # Gather features
   mod_features <- list()
-  for (i in 1:100) {
+  for (i in 1:length(result)) {
     mod_features[[i]] <- result[[i]]$feature
   }
   mod_features <- mod_features %>%

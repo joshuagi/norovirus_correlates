@@ -13,7 +13,8 @@ library(gridExtra)
 library(doParallel)
 library(glmnet)
 library(ranger)
-
+library(doSNOW)
+library(foreach)
 
 # Import functions
 source("code/pipeline.utils.R")
@@ -21,10 +22,6 @@ source("code/pipeline.utils.R")
 # Set paths
 result_path = "result/" 
 figure_path = "figures/"
-
-# set up parallel backend for grid search
-cl <- makePSOCKcluster(parallel::detectCores(logical = FALSE))
-registerDoParallel(cl)
 
 
 # Load data
@@ -62,21 +59,41 @@ immunogenicity_long <- immunogenicity %>%
   mutate(response = factor(response, levels = c(0,1))) 
 
 
+
+# Set up parallel backend and progress bar
+num_cores <- parallel::detectCores(logical = FALSE)
+cl <- makeCluster(num_cores)
+registerDoSNOW(cl)
+iterations <- 100
+pb <- txtProgressBar(max = iterations, style = 3)
+progress <- function(n) setTxtProgressBar(pb, n)
+opts <- list(progress = progress)
+
+
 # Run the analysis pipeline
 immunogenicity_long %>%
   # Analyze per group
   split(.$Treatment) %>%
   purrr::map(., function(x) {
     Treatment_i <- unique(x$Treatment)
-    result <- list()
-    i<-1
-    for (i in 1:100) {
-      print(i)
-      result[[i]] <- evaluateModels(x, iteration = i, prop = 0.64, weighted = T)
-    }
+    
+    result <- foreach(i = 1:iterations, .packages = c('tidymodels', 'stringr', 'vip'), 
+                      .export = "evaluateModels",
+                      .multicombine = TRUE, 
+                      .inorder = FALSE,
+                      .options.snow = opts,
+                      .verbose = T) %dopar% {
+                        result <- evaluateModels(x, iteration = i, prop = 0.64, weighted = T)
+                        return(result)
+                      }
+    
     file <- paste0(result_path, Sys.Date(), "_", Treatment_i, "_", "NVinfection", "_predictions.rds")
     saveRDS(result, file = file)
   })
+
+stopCluster(cl)
+
+
 
 # Load results
 resultVXA <- readRDS("result/2024-08-25_VXA_NVinfection_predictions.rds")
