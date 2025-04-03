@@ -139,6 +139,7 @@ evaluateModels <- function(data, iteration = 1, prop = 0.64, weighted = TRUE) {
 
 safelyw <- safely(wilcox_test)
 
+
 plotModels <- function(result) {
   
   # Gather predictions
@@ -176,9 +177,8 @@ plotModels <- function(result) {
     split(.$model) %>%
     purrr::map(., function(x) {
       
-      #x <- multivariable_plots$lasso_reg
       model_i <- unique(x$model)
-      
+
       p.value <- x %>%
         data.frame() %>%
         safelyw(pred ~ response)
@@ -186,6 +186,7 @@ plotModels <- function(result) {
         mutate(p = paste0("p.value = ", p))
       
       max.pred <- max(x$pred) + 0.1
+      
       ### Predictions
       preds.plot <- x %>% 
         ggplot(aes(x = response, y = pred)) +
@@ -212,15 +213,22 @@ plotModels <- function(result) {
         labs(y = "prediction", x = "") 
       
       ### ROC curve
-      r<-roc(x$response, x$pred, direction = "<")
-      r.data <- rocdata(x$response, x$pred)$roc
-      r.stats <- rocdata(x$response, x$pred)$stats
-      r.ci <- ci.se(r, specificities = seq(0, 1, l = 25))
+      roc_obj <- roc(x$response, x$pred, ci = TRUE, direction="<") # “<”: if the predictor values for the control group are lower or equal than the values of the case group
+      r.stats <- data.frame(roc_obj$ci) %>%
+        t() %>%
+        data.frame() %>%
+        dplyr::rename(ci.lower = X1,
+                      auc = X2,
+                      ci.upper = X3) %>%
+        mutate(label = paste0("AUC = ", round(auc, 2), " (", round(ci.lower, 2), " - ", round(ci.upper, 2), ")"))
+      
+      roc_obj <- smooth(roc_obj, method = "density", bw = 0.001)
+      r.data <- data.frame(x = 1- roc_obj$specificities,
+                           y = roc_obj$sensitivities)
+      r.ci <- ci.se(roc_obj, specificities = seq(0, 1, l = 25))
       r.ci <- data.frame(x = as.numeric(rownames(r.ci)),
                          lower = r.ci[, 1],
                          upper = r.ci[, 3])
-      r.stats <- r.stats %>%
-        mutate(label = paste0("AUC = ", round(r.stats$auc, 2), " (", round(r.stats$ci.lower, 2), " - ", round(r.stats$ci.upper, 2), ")"))
       
       ROC <- r.data %>%
         ggplot(aes(x = x, y = y)) +
@@ -289,62 +297,6 @@ plotModels <- function(result) {
   
   result <- list(multivariable_plots = multivariable_plots)
   return(result)
-}
-
-
-
-
-rocdata <- function(grp, pred){
-  # https://www.r-bloggers.com/2012/03/simple-roc-plots-with-ggplot2-part-1/
-  # https://www.r-bloggers.com/2012/03/simple-roc-plots-with-ggplot2-part-2/ 
-  # Produces x and y co-ordinates for ROC curve plot
-  # Arguments: grp - labels classifying subject status
-  #            pred - values of each observation
-  # Output: List with 2 components:
-  #         roc = data.frame with x and y co-ordinates of plot
-  #         stats = data.frame containing: area under ROC curve, p value, upper and lower 95% confidence interval
-  
-  grp <- as.factor(grp)
-  if (length(pred) != length(grp)) {
-    stop("The number of classifiers must match the number of data points")
-  } 
-  
-  if (length(levels(grp)) != 2) {
-    stop("There must only be 2 values for the classifier")
-  }
-  
-  cut <- unique(pred)
-  tp <- sapply(cut, function(x) length(which(pred > x & grp == levels(grp)[2])))
-  fn <- sapply(cut, function(x) length(which(pred < x & grp == levels(grp)[2])))
-  fp <- sapply(cut, function(x) length(which(pred > x & grp == levels(grp)[1])))
-  tn <- sapply(cut, function(x) length(which(pred < x & grp == levels(grp)[1])))
-  tpr <- tp / (tp + fn)
-  fpr <- fp / (fp + tn)
-  roc = data.frame(x = fpr, y = tpr)
-  roc <- roc[order(roc$x, roc$y),] # “<”: if the predictor values for the control group are lower or equal than the values of the case group
-  
-  i <- 2:nrow(roc)
-  auc <- (roc$x[i] - roc$x[i - 1]) %*% (roc$y[i] + roc$y[i - 1])/2
-  
-  pos <- pred[grp == levels(grp)[2]]
-  neg <- pred[grp == levels(grp)[1]]
-  q1 <- auc/(2-auc)
-  q2 <- (2*auc^2)/(1+auc)
-  se.auc <- sqrt(((auc * (1 - auc)) + ((length(pos) -1)*(q1 - auc^2)) + ((length(neg) -1)*(q2 - auc^2)))/(length(pos)*length(neg)))
-  ci.upper <- auc + (se.auc * 1.96)#
-  ci.lower <- auc - (se.auc * 1.96)#
-  
-  se.auc.null <- sqrt((1 + length(pos) + length(neg))/(12*length(pos)*length(neg)))
-  z <- (auc - 0.5)/se.auc.null
-  p <- 2*pnorm(-abs(z))
-  
-  stats <- data.frame (auc = auc,
-                       p.value = p,
-                       ci.upper = ci.upper,
-                       ci.lower = ci.lower
-  )
-  
-  return (list(roc = roc, stats = stats))
 }
 
 
