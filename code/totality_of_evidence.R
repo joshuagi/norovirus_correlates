@@ -14,8 +14,8 @@ endpoints_raw_data_Primary <- endpoints_raw_data %>%
   mutate(Treatment = case_when(Treatment == "VXA-G1.1-NN" ~ "VXA",  
                                TRUE ~ Treatment))
 immunogenicity_raw_data_Primary <- immunogenicity %>%
-  select(SUBJID, Treatment, ASCRaw_D8, NBAA_D28, SIgA_D28, SIgG_D28) %>%
-  mutate_at(vars(NBAA_D28, SIgA_D28, SIgG_D28), funs(log10(.)))
+  select(SUBJID, Treatment, ASC_D8, NBAA_D28, SerumIgA_D28, SerumIgG_D28) %>%
+  mutate_at(vars(NBAA_D28, SerumIgA_D28, SerumIgG_D28), funs(log10(.)))
 
 primary_endpoints <- full_join(endpoints_raw_data_Primary, immunogenicity_raw_data_Primary, by = c("SUBJID", "Treatment")) %>%
   mutate(Treatment = factor(Treatment, levels = c("VXA", "Placebo")))
@@ -70,10 +70,10 @@ estimateDifference <- function(x, iteration = 1) {
 True_estimates <- estimateDifference(primary_endpoints) # Material for table and forest plot
 True_estimates <- True_estimates %>%
   mutate(group = case_when(variable %in% c("qPCR+", "qPCR+AGE+") ~ "efficacy",
-                           variable %in% c("SIgA_D28", "SIgG_D28", "NBAA_D28") ~ "antibody",
+                           variable %in% c("SerumIgA_D28", "SerumIgG_D28", "NBAA_D28") ~ "antibody",
                            TRUE ~variable)) %>%
-  mutate(group = factor(group, levels = c("efficacy", "antibody", "NBAA_D28", "ASCRaw_D8"))) %>%
-  mutate(variable = factor(variable, levels = rev(c("qPCR+", "qPCR+AGE+", "SIgA_D28", "SIgG_D28", "NBAA_D28", "ASCRaw_D8")))) %>%
+  mutate(group = factor(group, levels = c("efficacy", "antibody", "NBAA_D28", "ASC_D8"))) %>%
+  mutate(variable = factor(variable, levels = rev(c("qPCR+", "qPCR+AGE+", "SerumIgA_D28", "SerumIgG_D28", "NBAA_D28", "ASC_D8")))) %>%
   mutate(estimate = case_when(group == "efficacy" ~ estimate*100,
                               group %in% c("antibody") ~ 10^estimate,
                               TRUE ~ estimate)) %>%

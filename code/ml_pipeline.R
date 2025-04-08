@@ -41,9 +41,9 @@ immunogenicity_long <- immunogenicity %>%
   mutate(variable = str_split(variable, pattern = "_", simplify = T)[,1]) %>%
   
   filter(Day %in% c("D28", "D8")) %>%
-  mutate(value = case_when(variable == "ASCRaw" ~ value + 1, # add pseudocount to ASCs
+  mutate(value = case_when(variable == "ASC" ~ value + 1, # add pseudocount to ASCs
                            TRUE ~ value)) %>%
-  mutate(value = case_when(variable %in% c("ASCRaw", "FecalIgAVP1onTotal", "NBAA", "SIgA", "SIgG", "NIgAGI1", "SALIgAGI1") ~log10(value), # log10 transform predictors
+  mutate(value = case_when(variable %in% c("ASC", "FecalIgA", "NBAA", "SerumIgA", "SerumIgG", "NasalIgA", "SalivaIgA") ~log10(value), # log10 transform predictors
                            TRUE ~ value)) %>%
   mutate(variable = paste0(variable, "_", Day) ) %>%
   select(-Day) %>%
