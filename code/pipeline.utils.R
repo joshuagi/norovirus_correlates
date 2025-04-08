@@ -208,6 +208,8 @@ plotModels <- function(result) {
               legend.key.height = unit(0.2, "cm"),
               panel.grid = element_blank(),
               plot.caption = element_text(size = 4.5),
+              axis.ticks = element_line(colour = "black", size = 0.2),
+              panel.border = element_rect(fill=NA, colour = "black", size=0.2),
               legend.position = "none") +
         geom_text(data = p.value, aes(x = 1.5, y = max.pred, label = p), size = 5 / (14/5)) +
         labs(y = "prediction", x = "") 
@@ -232,9 +234,9 @@ plotModels <- function(result) {
       
       ROC <- r.data %>%
         ggplot(aes(x = x, y = y)) +
-        geom_line(size = 1) +
+        geom_line(size = 0.5) +
         geom_ribbon(data = r.ci, aes(x = 1 - x, ymax = upper, ymin = lower), inherit.aes = F, alpha = 0.1) +
-        geom_abline (intercept = 0, slope = 1, linetype = "dashed", size = 1) +
+        geom_abline (intercept = 0, slope = 1, linetype = "dashed", size = 0.5) +
         theme_bw() +
         geom_text(data = r.stats, aes(x = 0.5, y = 1.1, label = label), size = 5 / (14/5)) +
         scale_x_continuous("False Positive Rate", limits = c(0,1.1), breaks = seq(0, 1, by = 0.2)) +
@@ -252,6 +254,8 @@ plotModels <- function(result) {
               legend.key.height = unit(0.2, "cm"),
               legend.position = "right",
               panel.grid = element_blank(),
+              axis.ticks = element_line(colour = "black", size = 0.2),
+              panel.border = element_rect(fill=NA, colour = "black", size=0.2),
               plot.subtitle = element_text(size = 5))
       
       ### Variable importance
@@ -279,6 +283,8 @@ plotModels <- function(result) {
               legend.position = "right",
               panel.grid = element_blank(),
               plot.subtitle = element_text(size = 5),
+              axis.ticks = element_line(colour = "black", size = 0.2),
+              panel.border = element_rect(fill=NA, colour = "black", size=0.2),
               plot.caption = element_text(size = 5)) 
       result <- list(preds.plot = preds.plot,
                      ROC = ROC,

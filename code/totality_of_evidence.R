@@ -6,11 +6,14 @@ library(lemon)
 path = "figures/" # Store results
 
 # Load data
-endpoints_raw_data_Primary <- read.xlsx("data/endpoints_raw_data.xlsx") %>%
+immunogenicity <-  read.xlsx("data/Data file S1.xlsx", sheet = 3)
+endpoints_raw_data <- read.xlsx("data/Data file S1.xlsx", sheet = 2)
+
+endpoints_raw_data_Primary <- endpoints_raw_data %>%
   select(SUBJID, Treatment, `qPCR+`, `qPCR+AGE+`) %>%
   mutate(Treatment = case_when(Treatment == "VXA-G1.1-NN" ~ "VXA",  
                                TRUE ~ Treatment))
-immunogenicity_raw_data_Primary <- read.xlsx("data/immunogenicity_raw_data.xlsx") %>%
+immunogenicity_raw_data_Primary <- immunogenicity %>%
   select(SUBJID, Treatment, ASCRaw_D8, NBAA_D28, SIgA_D28, SIgG_D28) %>%
   mutate_at(vars(NBAA_D28, SIgA_D28, SIgG_D28), funs(log10(.)))
 

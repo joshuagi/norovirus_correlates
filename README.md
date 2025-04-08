@@ -5,15 +5,28 @@ This repository is to replicate analyses from the manuscript titled "An effectiv
 
 ## Running the analyses
 
-Clone the repository and start R in the root directory. 
+- Clone the repository: 
 
 ```
 git clone https://github.com/joshuagi/norovirus_correlates.git
+```
+
+- Then, update the paths to the data files in `totality_of_evidence.R` and `ml_pipeline.R`. The data files are available in the supplement of the manuscript (Supplementary Data File).
+
+```
+immunogenicity <-  read.xlsx("your_file_path_here", sheet = 3)
+endpoints_raw_data <- read.xlsx("your_file_path_here", sheet = 2)
+```
+
+- Start R in the root directory... 
+
+```
 cd norovirus_correlates
 R
 ```
 
-Then, restore the project environment and run the R scripts:
+- ... and restore the project environment and run the R scripts:
+
 
 ```
 renv::restore()
@@ -23,14 +36,6 @@ source("code/ml_pipeline.R")
 
 
 ## File Guide
-
-### data
-
-This directory contains 2 excel files containing raw individual-level data presented in the manuscript:
-
-- `endpoints_raw_data.xlsx` contains all endpoints data
-
-- `immunogenicity_raw_data.xlsx` contains all immunological measurements presented in the study for all timepoints (D1, D8, D28, D57)
 
 ### code
 

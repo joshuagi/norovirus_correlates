@@ -24,15 +24,14 @@ result_path = "result/"
 figure_path = "figures/"
 
 
-# Load data
-immunogenicity <-  read.xlsx("data/immunogenicity_raw_data.xlsx")
-endpoints_raw_data <- read.xlsx("data/endpoints_raw_data.xlsx")
+# Load data (update pathnames)
+immunogenicity <-  read.xlsx("data/Data file S1.xlsx", sheet = 3)
+endpoints_raw_data <- read.xlsx("data/Data file S1.xlsx", sheet = 2)
 
 
 
 # Filter and transform predictor data
 immunogenicity_long <- immunogenicity %>%
-  #melt(., id.vars = c("SUBJID", "Treatment")) %>%
   pivot_longer(
     cols = -c(SUBJID, Treatment),
     names_to = "variable",
