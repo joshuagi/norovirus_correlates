@@ -1,6 +1,6 @@
 # Norovirus correlates of protection analysis pipeline
 
-This repository is to replicate analyses from the manuscript titled "An effective oral norovirus vaccine generates mucosal immunity and reduces viral shedding in a phase 2 placebo-control challenge study". Data and code are provided for the totality of evidence analysis (Figure 2) and the correlates of protection machine learning analysis (Figure 5 and Supplmemental Figure 6).
+This repository is to replicate analyses from the manuscript titled "An effective oral norovirus vaccine generates mucosal immunity and reduces viral shedding in a phase 2 placebo-control challenge study". Data and code are provided for the totality of evidence analysis (Figure 2) and the correlates of protection machine learning analysis (Figure 5 and Supplemental Figure 6).
 
 
 ## Running the analyses
